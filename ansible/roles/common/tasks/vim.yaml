@@ -1,0 +1,27 @@
+---
+- name: install dependencies for vim
+  dnf: name={{item}} state=latest
+  with_items:
+    - lua-devel
+    - python-devel
+    - ruby-devel
+    - ncurses-devel
+  become: yes
+- name: download vim source file
+  get_url: url={{vimurl}} dest={{srcdir}}/vim-7.4.tar.bz2
+  become: yes
+- name: unarchive vim source file
+  unarchive: src={{srcdir}}/vim-7.4.tar.bz2 dest={{srcdir}} copy=no creates={{srcdir}}/vim74
+  become: yes
+- name: install vim from source file
+  shell: ./configure --enable-multibyte --with-features=huge --enable-luainterp --enable-perlinterp --enable-pythoninterp --with-python-config-dir=/usr/lib64/python2.7/config --enable-rubyinterp --with-ruby-command=/usr/bin/ruby && make && make install chdir={{srcdir}}/vim74 creates=/usr/local/bin/vim
+  become: yes
+- name: make .vim/bundle
+  file: path=~/.vim/bundle state=directory
+- name: git clone neobundle 
+  git: repo=https://github.com/Shougo/neobundle.vim dest=~/.vim/bundle/neobundle.vim accept_hostkey=yes
+- name: install plugins by neobundle
+  shell: ~/.vim/bundle/neobundle.vim/bin/neoinstall creates=~/.vim/bundle/molokai
+- name: cp molokai theme
+  shell: cp -r ~/.vim/bundle/molokai/colors ~/.vim creates=~/.vim/colors/molokai.vim
+

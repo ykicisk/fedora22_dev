@@ -1,0 +1,23 @@
+---
+- name: dnf group install 
+  dnf: name={{ item }} state=present
+  with_items:
+      - "@c-development"
+  become: yes
+- name: install git
+  dnf: name=git state=present
+  become: yes
+- name: install tmux
+  dnf: name=tmux state=present
+  become: yes
+- name: git clone dotfiles
+  git: repo={{giturl}} dest=/usr/local/dotfiles accept_hostkey=yes
+  become: yes
+- name: copy dotfiles
+  shell: ln -s /usr/local/dotfiles/{{item}} . creates=~/.tmux.conf
+  with_items:
+    - .vimrc
+    - .zshrc
+    - .tmux.conf
+- include: zsh.yaml
+- include: vim.yaml
