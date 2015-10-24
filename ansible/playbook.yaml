@@ -5,5 +5,5 @@
   vars:
     srcdir: "/usr/local/src"
   roles:
-    - common
-      # - caffe_cpu
+    - caffe_cpu
+      #- common
