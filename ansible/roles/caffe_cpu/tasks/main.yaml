@@ -1,0 +1,53 @@
+---
+- name: install dependencies for caffe cpu
+  dnf: name={{item}} state=latest
+  with_items:
+    - openblas-devel
+    - protobuf-devel
+    - snappy-devel
+    - leveldb-devel
+    - glog-devel
+    - boost-devel
+    - opencv-devel
+    - gflags-devel
+    - lmdb-devel
+    - hdf5-devel
+  become: yes
+- name: install python libs by dnf
+  dnf: name={{item}} state=latest
+  with_items:
+    - python-devel
+    - numpy
+    - scipy
+    - python-matplotlib
+    - python-scikit-learn
+    - python-scikit-image
+    - python-pillow-devel
+    - protobuf-python
+  become: yes
+- name: upgrade pip
+  pip: name=pip extra_args='--upgrade'
+  become: yes
+- name: install python-dateutil
+  pip: name="python-dateutil>=1.4,<2"
+  become: yes
+- name: install python libraries for caffe cpu
+  pip: name={{item}}
+  with_items:
+    - h5py
+    - leveldb
+    - protobuf
+    - pyyaml
+  become: yes
+- name: git clone caffe
+  git: repo={{caffe_git_repo}} dest={{caffedir}} accept_hostkey=yes version=rc2
+- name: put Makefile.config
+  copy: src=ansible/conf/caffe/Makefile.conf dest={{caffedir}}
+- name: build caffe
+  shell: make && make test && make runtest chdir={{caffedir}} creates={{caffedir}}/build
+  environment:
+    CPLUS_INCLUDE_PATH: /usr/include/openblas
+- name: build pycaffe
+  shell: make pycaffe chdir={{caffedir}} creates={{caffedir}}/python/caffe/proto/__init__.py
+- name: set PYTHONPATH environment
+  lineinfile: dest=/home/vagrant/.zshrc line='export PYTHONPATH={{caffedir}}/PYTHON' insertafter='EOF' state=present
