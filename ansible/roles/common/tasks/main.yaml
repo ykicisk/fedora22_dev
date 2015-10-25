@@ -11,10 +11,9 @@
   dnf: name=tmux state=present
   become: yes
 - name: git clone dotfiles
-  git: repo={{giturl}} dest=/usr/local/dotfiles accept_hostkey=yes
-  become: yes
+  git: repo={{giturl}} dest=/home/vagrant/dotfiles accept_hostkey=yes
 - name: copy dotfiles
-  shell: ln -s /usr/local/dotfiles/{{item}} . creates=~/.tmux.conf
+  shell: ln -s /home/vagrant/dotfiles/{{item}} . creates=~/.tmux.conf
   with_items:
     - .vimrc
     - .zshrc

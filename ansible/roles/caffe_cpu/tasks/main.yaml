@@ -42,12 +42,16 @@
 - name: git clone caffe
   git: repo={{caffe_git_repo}} dest={{caffedir}} accept_hostkey=yes version=rc2
 - name: put Makefile.config
-  copy: src=ansible/conf/caffe/Makefile.conf dest={{caffedir}}
+  copy: src=conf/caffe/Makefile.config dest={{caffedir}}/Makefile.config
 - name: build caffe
   shell: make && make test && make runtest chdir={{caffedir}} creates={{caffedir}}/build
   environment:
     CPLUS_INCLUDE_PATH: /usr/include/openblas
 - name: build pycaffe
   shell: make pycaffe chdir={{caffedir}} creates={{caffedir}}/python/caffe/proto/__init__.py
+  environment:
+    CPLUS_INCLUDE_PATH: /usr/include/openblas
 - name: set PYTHONPATH environment
-  lineinfile: dest=/home/vagrant/.zshrc line='export PYTHONPATH={{caffedir}}/PYTHON' insertafter='EOF' state=present
+  lineinfile: dest=/home/vagrant/.zshrc line='export PYTHONPATH={{caffedir}}/python' insertafter='EOF' state=present
+- name: set CPLUS_INCLUDE_PATH environment
+  lineinfile: dest=/home/vagrant/.zshrc line='export CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:/usr/include/openblas' insertafter='EOF' state=present
